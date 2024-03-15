@@ -18,9 +18,9 @@ public class PlayerBehaviour : MonoBehaviour
     public Rigidbody2D rb;
     public GameObject crosshair;
     public GameObject bulletPrefab;
-    bool flipped = false;
-    bool isFiring;
-    bool endOfFiring;
+    private bool flipped = false;
+    private bool isFiring;
+    private bool endOfFiring;
 
 
     private void Awake()
@@ -86,9 +86,10 @@ public class PlayerBehaviour : MonoBehaviour
 
     private void InstantiateBullet()
     {
-                GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
-                bullet.GetComponent<Rigidbody2D>().velocity = fireDirection * 10.0f;
-                Destroy(bullet, 2.0f);
+        GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
+        Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(), gameObject.GetComponent<Collider2D>(), true);
+        bullet.GetComponent<Rigidbody2D>().velocity = fireDirection * 10.0f;
+        Destroy(bullet, 2.0f);
     }
 
     private void Movement()
@@ -126,7 +127,7 @@ public class PlayerBehaviour : MonoBehaviour
 
     private bool CheckFlip(Vector3 mouseMov)
     {
-        if (mouseMov.x < transform.position.x)
+        if (crosshair.transform.position.x < transform.position.x)
         {
             return true;
         }

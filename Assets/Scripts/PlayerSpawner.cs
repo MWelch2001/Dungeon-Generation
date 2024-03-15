@@ -6,8 +6,13 @@ using UnityEngine;
 
 public class PlayerSpawner : MonoBehaviour
 {
+
+    [SerializeField]
+    private GameObject eSpawnerPrefab;
+    private GameObject eSpawner;
+
     public GameObject playerPrefab;
-    public GameObject player;
+    private GameObject player;
     private Vector3 offset;
     void Start()
     {
@@ -24,6 +29,8 @@ public class PlayerSpawner : MonoBehaviour
             if (floorTiles[x, y] != null && corridorTiles[x, y] == null)
             {
                 player = Instantiate(playerPrefab, new Vector3(x, y, 0), Quaternion.identity);
+                eSpawner = Instantiate(eSpawnerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+                eSpawner.tag = "EnemySpawner";
                 isSpawned = true;
             }
         }

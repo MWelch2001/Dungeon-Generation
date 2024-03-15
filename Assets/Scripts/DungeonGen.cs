@@ -3,21 +3,27 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using JetBrains.Annotations;
 using Unity.Collections.LowLevel.Unsafe;
-using static DungeonGen;
+using static DungeonGen; 
 
 public class DungeonGen : MonoBehaviour
 {
-    public int rows, cols;
+    public List<Rect> completeRooms = new List<Rect>();
+    [SerializeField]
+    private GameObject floor;
+    [SerializeField]
+    private GameObject background;
+    [SerializeField]
+    private GameObject triggerPrefab;
+
     public int rMaxSize, rMinSize;
-    public GameObject floor;
-    public GameObject background;
+    public int rows, cols;
+    
     public GameObject[] cardinalWalls = new GameObject[4];
     public GameObject[] cornerWalls = new GameObject[4];
     public GameObject[,] floorTiles;
     public GameObject[,] corridorTiles;
     private GameObject[,] backgroundTiles;
     private GameObject[,] wallTiles;
-
     public class Room
     {
         public List<Rect> corridors = new List<Rect>();
@@ -213,8 +219,10 @@ public class DungeonGen : MonoBehaviour
                     instance.GetComponent<Renderer>().sortingLayerName = "Dungeon";
                     floorTiles[x, y] = instance;
                     DrawWalls(currentRoom, x, y);
+                    
                 }
             }
+            completeRooms.Add(currentRoom.room);
         } else {
             DrawRoom(currentRoom.left);
             DrawRoom(currentRoom.right);
@@ -367,7 +375,6 @@ public class DungeonGen : MonoBehaviour
     }
     public void DrawCorners(int x, int y, Rect corridor)
     {
-        //Debug.Log(string.Format("x: {0}, y: {1}", corridor.x, corridor.y));
         if (corridor.height > corridor.width)
         {
             if (wallTiles[x + 2, y] != null && wallTiles[x - 2, y] != null)
@@ -375,9 +382,18 @@ public class DungeonGen : MonoBehaviour
                 if (IsUpperCloser(y, corridor))
                 {
                     MakeCorner(x - 1, y, 2);
-                    MakeCorner(x + 1, y, 3); 
+                    MakeCorner(x + 1, y, 3);
+                    
                 }
-               
+                GameObject spawnTrigger = Instantiate(triggerPrefab, new Vector3(x, y, 0f), Quaternion.identity);
+                foreach (Rect c in completeRooms)
+                {
+                    if (c.Contains(new Vector2(x, y)))
+                    {
+                        spawnTrigger.GetComponent<EnemySpawnTrigger>().triggerRoom = c;
+                    }
+                }
+                
             }
         }
         if(corridor.width > corridor.height)
@@ -396,22 +412,26 @@ public class DungeonGen : MonoBehaviour
                 Destroy(wallTiles[x, y + 1]);
                 wallTiles[x, y + 1] = null;
                 GameObject cornerWall = Instantiate(cardinalWalls[2], new Vector3(x, y + 1, 0f), Quaternion.identity);
+                GameObject spawnTrigger = Instantiate(triggerPrefab, new Vector3(x, y, 0f), Quaternion.identity);
+                foreach (Rect c in completeRooms)
+                {
+                    if (c.Contains(new Vector2(x, y)))
+                    {
+                        spawnTrigger.GetComponent<EnemySpawnTrigger>().triggerRoom = c;
+                    }
+                }
                 cornerWall.transform.SetParent(transform);
                 cornerWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
                 wallTiles[x, y + 1] = cornerWall;
             }
-
         }
-        //MakeWall(x - 1, y, 2);
-        //MakeWall(x + 1, y, 3); 
     }
 
     public bool IsUpperCloser(int y, Rect corridor)
     {
         int dYMax = (int)corridor.yMax - y;
         int dYMin = y - (int)corridor.yMin;
-        //Debug.Log(string.Format("y: {0}, yMax: {1}, yMin: {2}", y, corridor.yMax, corridor.yMin));
-        //Debug.Log(string.Format("max: {0}, min: {1}", dYMax, dYMin));
+
 
         if (dYMin > dYMax)
         {
@@ -419,7 +439,6 @@ public class DungeonGen : MonoBehaviour
         }
         else
         {
-            //Debug.Log("yes you are crazy!");
             return false; 
         }     
     }
@@ -428,8 +447,6 @@ public class DungeonGen : MonoBehaviour
     {
         int dXMax = (int)corridor.xMax - x;
         int dXMin = x - (int)corridor.xMin;
-        //Debug.Log(string.Format("y: {0}, yMax: {1}, yMin: {2}", x, corridor.xMax, corridor.xMin));
-        //Debug.Log(string.Format("max: {0}, min: {1}", dXMax, dXMin));
 
         if (dXMin > dXMax)
         {
@@ -437,31 +454,10 @@ public class DungeonGen : MonoBehaviour
         }
         else
         {
-            //Debug.Log("yes you are crazy!");
             return false;
         }
     }
 
-    //private bool IsEdge(int x, int y, Room cRoom)
-    //{
-    //   if (cRoom.room.xMin == x)
-    //   {
-    //        return true;
-    //    }
-    //   if(cRoom.room.yMin == y)
-    //   {
-    //        return true;
-    //   }
-    //   if (cRoom.room.xMax == x)
-    //   {
-    //        return true;
-    //   }
-    //   if (cRoom.room.yMax == y)
-    //   {
-    //        return true;
-    //   }
-    //    return false;
-    //}
     public void DrawCorridor(Room currentRoom)
     {
         if (currentRoom == null)
@@ -483,8 +479,7 @@ public class DungeonGen : MonoBehaviour
                         GameObject instance = Instantiate(floor, new Vector3(x, y, 0f), Quaternion.identity);
                         instance.transform.SetParent(transform);
                         instance.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-                        corridorTiles[x, y] = instance;
-                        
+                        corridorTiles[x, y] = instance; 
                         DrawCorridorWalls(x, y);
                         DrawCorners(x, y, corridor);
                         if (wallTiles[x, y] != null)
@@ -502,14 +497,68 @@ public class DungeonGen : MonoBehaviour
 
     public void DrawBackground()
     {
-        for (int x = 0; x < rows ; x++)
+        for (int x = 0; x < rows; x++)
         {
+
             for (int y = 0; y < cols; y++)
             {
+                if (x < 20)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x - 20, y, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+                if (y < 20)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x, y - 20, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+                if (x > rows - 21)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x + 20, y, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+                if (y > cols - 21)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x , y + 20, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+
+                if (y < 20 && x < 20)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x - 20, y - 20, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+                if (x > rows - 21 && y < 20)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x + 20, y - 20, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+                if (x > rows - 21 && y > cols - 21)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x + 20, y + 20, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+                if (x < 20 && y > cols - 21)
+                {
+                    GameObject inst = Instantiate(background, new Vector3(x - 20, y + 20, 0f), Quaternion.identity);
+                    inst.transform.SetParent(transform);
+                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                }
+
                 GameObject instance = Instantiate(background, new Vector3(x, y, 0f), Quaternion.identity);
                 instance.transform.SetParent(transform);
                 instance.GetComponent<Renderer>().sortingLayerName = "Background";
-                backgroundTiles[x, y] = instance;
+                if (x >= 0 && x <= rows && y >= 0 & y <= cols)
+                {
+                    backgroundTiles[x, y] = instance;
+                }
             }
         }
     }

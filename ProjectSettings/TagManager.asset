@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - DungeonGen
+  - Enemy
+  - Trigger
+  - EnemySpawner
   layers:
   - Default
   - TransparentFX
