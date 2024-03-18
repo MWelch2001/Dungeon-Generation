@@ -127,6 +127,12 @@ MonoBehaviour:
   rb: {fileID: 1850134861376836041}
   crosshair: {fileID: 5247394509384702389}
   bulletPrefab: {fileID: 3438291102675683352, guid: 1ebfa31f43d14d0419edf40368bb796f, type: 3}
+  spawnRoom:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
 --- !u!50 &1850134861376836041
 Rigidbody2D:
   serializedVersion: 4
@@ -201,7 +207,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afecd3e7b66dbcf4b805794dfa89b8e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 100
+  healthBar:
+  - {fileID: 21300000, guid: 5a9fbb32c05a73240849596ba33993f1, type: 3}
+  - {fileID: 21300000, guid: efd0ff90273d8d549a4e3f9dd6f26d34, type: 3}
+  - {fileID: 21300000, guid: efd64d3b478e5084687d569fa313adfd, type: 3}
+  - {fileID: 21300000, guid: 8b9d95651b3793c4f9ae364a920b017b, type: 3}
+  - {fileID: 21300000, guid: 00955ce9c76703244963c7ec6813ceae, type: 3}
+  - {fileID: 21300000, guid: fe478e972b916b34489282eda12bd5a1, type: 3}
+  health: 25
+  maxHp: 25
 --- !u!1 &5247394509384702389
 GameObject:
   m_ObjectHideFlags: 0

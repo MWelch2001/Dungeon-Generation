@@ -64,12 +64,17 @@ public class EnemyBehaviour : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        bool isPlayerDead = false;
         gameObject.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
         if (collision.collider.CompareTag("Player"))
         {
             if(collision.collider.GetComponent<Health>() != null)
             {
-                collision.collider.GetComponent<Health>().Damage(dmg);
+                isPlayerDead = collision.collider.GetComponent<Health>().Damage(dmg);
+                if (isPlayerDead)
+                {
+                    SceneManager.LoadSceneAsync("Scenes/Game-Over");
+                }
             }
         }
     }

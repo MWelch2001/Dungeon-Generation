@@ -54,6 +54,12 @@ TagManager:
   - name: Player
     uniqueID: 648916883
     locked: 0
+  - name: Coin
+    uniqueID: 3483598341
+    locked: 0
   - name: Bullet
     uniqueID: 4275963931
+    locked: 0
+  - name: UI
+    uniqueID: 3328004413
     locked: 0

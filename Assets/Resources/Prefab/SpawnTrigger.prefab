@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2092351040800209573}
   m_Layer: 0
   m_Name: SpawnTrigger
-  m_TagString: Untagged
+  m_TagString: Trigger
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -51,6 +51,7 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
+  spawner: {fileID: 0}
 --- !u!61 &2092351040800209573
 BoxCollider2D:
   m_ObjectHideFlags: 0

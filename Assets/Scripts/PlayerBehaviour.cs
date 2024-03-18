@@ -18,6 +18,7 @@ public class PlayerBehaviour : MonoBehaviour
     public Rigidbody2D rb;
     public GameObject crosshair;
     public GameObject bulletPrefab;
+    public Rect spawnRoom;
     private bool flipped = false;
     private bool isFiring;
     private bool endOfFiring;

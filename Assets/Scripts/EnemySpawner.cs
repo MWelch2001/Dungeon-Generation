@@ -28,12 +28,22 @@ public class EnemySpawner : MonoBehaviour
                 {
                     GameObject enemy = Instantiate(goblinPrefab, new Vector3(x, y, 0), Quaternion.identity);
                     spawnedLoc[i] = new Vector3(x, y, 0.0f);
-                    enemy.SetActive(false);
+
+                    enemy.SetActive(IsPlayerSpawn(room));
                     enemy.GetComponent<EnemyBehaviour>().spawnRoom = room;
                     enemies.Add(enemy);
                 }
             }
         }  
+    }
+
+    private bool IsPlayerSpawn(Rect room)
+    {
+        if (player.GetComponent<PlayerBehaviour>().spawnRoom == room)
+        {
+            return true;
+        }
+        return false;
     }
 
     private bool IsValidSpawn(int x, int y)
@@ -58,8 +68,7 @@ public class EnemySpawner : MonoBehaviour
                 {
                     enemy.SetActive(true);
                 }
-            }
-            
+            }   
         }
     }
 }
