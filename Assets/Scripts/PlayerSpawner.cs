@@ -26,7 +26,8 @@ public class PlayerSpawner : MonoBehaviour
         int y = (int)Random.Range(spawnRoom.yMin + 1, spawnRoom.yMax - 1);
         player = Instantiate(playerPrefab, new Vector3(x, y, 0), Quaternion.identity);
         player.GetComponent<PlayerBehaviour>().spawnRoom = this.spawnRoom;
-        StartCoroutine(GetEnemySpawner(3f));
+        StartCoroutine(GetEnemySpawner(1.5f));
+
         offset = new Vector3(0, 0, -10);
     }
 

@@ -16,6 +16,8 @@ public class EnemyBehaviour : MonoBehaviour
     private float speed;
     [SerializeField]
     public EnemyData data;
+    [SerializeField]
+    private GameObject coinPrefab;
 
     public Rect spawnRoom;
     private GameObject player;
@@ -89,7 +91,12 @@ public class EnemyBehaviour : MonoBehaviour
     IEnumerator DestroyEnemy(float time)
     {
         yield return new WaitForSeconds(time);
+        Vector3 enemyLoc = gameObject.transform.position;
         Destroy(gameObject);
+        if(Random.Range(0.1f, 1.0f) >= 0.3)
+        {
+            GameObject coin = Instantiate(coinPrefab, enemyLoc, Quaternion.identity);
+        }
     }
 
 }

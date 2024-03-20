@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using JetBrains.Annotations;
 using Unity.Collections.LowLevel.Unsafe;
-using static DungeonGen; 
+using static DungeonGen;
+using UnityEditor;
 
 public class DungeonGen : MonoBehaviour
 {
@@ -17,11 +18,10 @@ public class DungeonGen : MonoBehaviour
 
     public int rMaxSize, rMinSize;
     public int rows, cols;
-    
+
     public GameObject[] cardinalWalls = new GameObject[4];
     public GameObject[] cornerWalls = new GameObject[4];
     public GameObject[,] floorTiles;
-    public GameObject[,] corridorTiles;
     private GameObject[,] backgroundTiles;
     private GameObject[,] wallTiles;
     public class Room
@@ -82,7 +82,6 @@ public class DungeonGen : MonoBehaviour
 
             return new Rect(-1, -1, 0, 0);
         }
-
         public void CreateCorridor(Room left, Room right)
         {
             Rect l = left.GetRoom();
@@ -103,10 +102,9 @@ public class DungeonGen : MonoBehaviour
             {
                 if (Random.Range(0, 1) > 2)
                 {
-                    
+
                     corridors.Add(new Rect(lPoint.x, lPoint.y, Mathf.Abs(w) + 1, 1));
 
-                    
                     if (h < 0)
                     {
                         corridors.Add(new Rect(rPoint.x, lPoint.y, 1, Mathf.Abs(h)));
@@ -141,7 +139,6 @@ public class DungeonGen : MonoBehaviour
                 }
             }
         }
-
         public void CreateRoom()
         {
             if (left != null)
@@ -170,7 +167,7 @@ public class DungeonGen : MonoBehaviour
         }
 
         public bool Split(int rMinSize, int rMaxSize)
-        { 
+        {
             bool splitVertical = GetSplitDirection();
 
             if (!IsLeaf())
@@ -192,7 +189,7 @@ public class DungeonGen : MonoBehaviour
 
             }
             else
-            { 
+            {
                 int split = Random.Range(rMinSize, (int)(rect.width - rMinSize));
 
                 left = new Room(new Rect(rect.x, rect.y, rect.width, split));
@@ -219,11 +216,12 @@ public class DungeonGen : MonoBehaviour
                     instance.GetComponent<Renderer>().sortingLayerName = "Dungeon";
                     floorTiles[x, y] = instance;
                     DrawWalls(currentRoom, x, y);
-                    
                 }
             }
             completeRooms.Add(currentRoom.room);
-        } else {
+        }
+        else
+        {
             DrawRoom(currentRoom.left);
             DrawRoom(currentRoom.right);
         }
@@ -235,71 +233,46 @@ public class DungeonGen : MonoBehaviour
         if (x == currentRoom.room.xMin && y != currentRoom.room.yMin)
         {
             ClearOverlap(x, y, 2);
-            GameObject wall = Instantiate(cardinalWalls[0], new Vector3(x, y, 0f), Quaternion.identity);
-            wall.transform.SetParent(transform);
-            wall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x, y] = wall;
+            InstantiateWall(x, y, 0);
         }
         else if (x == currentRoom.room.xMax - 1 && y != currentRoom.room.yMin)
         {
             ClearOverlap(x, y, 2);
-            GameObject wall = Instantiate(cardinalWalls[1], new Vector3(x, y, 0f), Quaternion.identity);
-            wall.transform.SetParent(transform);
-            wall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x, y] = wall;
-            
+            InstantiateWall(x, y, 1);
         }
 
         if (y == currentRoom.room.yMin)
         {
             ClearOverlap(x, y, 2);
-            GameObject wall = Instantiate(cardinalWalls[3], new Vector3(x, y, 0f), Quaternion.identity);
-            wall.transform.SetParent(transform);
-            wall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x, y] = wall;
-            
+            InstantiateWall(x, y, 3);
+
         }
         else if (y == currentRoom.room.yMax - 1)
         {
             ClearOverlap(x, y, 2);
-            GameObject wall = Instantiate(cardinalWalls[2], new Vector3(x, y , 0f), Quaternion.identity);
-            wall.transform.SetParent(transform);
-            wall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x, y] = wall;
+            InstantiateWall(x, y, 2);
         }
 
-        if (y == currentRoom.room.yMax - 1 && x == currentRoom.room.xMin )
+        if (y == currentRoom.room.yMax - 1 && x == currentRoom.room.xMin)
         {
             ClearOverlap(x, y, 3);
-            GameObject topLeftWall = Instantiate(cardinalWalls[0], new Vector3(x , y, 0f), Quaternion.identity);
-            topLeftWall.transform.SetParent(transform);
-            topLeftWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x, y ] = topLeftWall;
+            InstantiateWall(x, y, 0);
         }
         if (y == currentRoom.room.yMin && x == currentRoom.room.xMin)
         {
             ClearOverlap(x, y, 3);
-            GameObject bottomLeftWall = Instantiate(cornerWalls[0], new Vector3(x, y, 0f), Quaternion.identity);
-            bottomLeftWall.transform.SetParent(transform);
-            bottomLeftWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x , y] = bottomLeftWall;
+            InstantiateCorner(x, y, 0);
         }
 
         if (y == currentRoom.room.yMax - 1 && x == currentRoom.room.xMax - 1)
         {
             ClearOverlap(x, y, 3);
-            GameObject topRightWall = Instantiate(cardinalWalls[1], new Vector3(x , y , 0f), Quaternion.identity);
-            topRightWall.transform.SetParent(transform);
-            wallTiles[x, y] = topRightWall;
-            topRightWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
+            InstantiateWall(x, y, 1);
         }
         if (y == currentRoom.room.yMin && x == currentRoom.room.xMax - 1)
         {
             ClearOverlap(x, y, 3);
-            GameObject bottomRightWall = Instantiate(cornerWalls[1], new Vector3(x, y, 0f), Quaternion.identity);
-            bottomRightWall.transform.SetParent(transform);
-            bottomRightWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x, y] = bottomRightWall;
+            InstantiateCorner(x, y, 1);
         }
     }
 
@@ -333,86 +306,88 @@ public class DungeonGen : MonoBehaviour
         if (floorTiles[x - 1, y] == null && wallTiles[x - 1, y] == null)
         {
             ClearOverlap(x - 1, y, 1);
-            GameObject lWall = Instantiate(cardinalWalls[0], new Vector3(x - 1, y, 0f), Quaternion.identity);
-            lWall.transform.SetParent(transform);
-            lWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x - 1, y] = lWall;
+            InstantiateWall(x - 1, y, 0);
         }
         if (floorTiles[x + 1, y] == null && wallTiles[x + 1, y] == null)
         {
             ClearOverlap(x + 1, y, 1);
-            GameObject lWall = Instantiate(cardinalWalls[1], new Vector3(x +  1, y, 0f), Quaternion.identity);
-            lWall.transform.SetParent(transform);
-            lWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x + 1, y] = lWall;
+            InstantiateWall(x + 1, y, 1);
         }
 
-        if (floorTiles[x , y + 1] == null && wallTiles[x, y + 1] == null)
+        if (floorTiles[x, y + 1] == null && wallTiles[x, y + 1] == null)
         {
-            ClearOverlap(x , y + 1, 1);
-            GameObject lWall = Instantiate(cardinalWalls[2], new Vector3(x , y + 1, 0f), Quaternion.identity);
-            lWall.transform.SetParent(transform);
-            lWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x , y+ 1] = lWall;
+            ClearOverlap(x, y + 1, 1);
+            InstantiateWall(x, y + 1, 2);
         }
         if (floorTiles[x, y - 1] == null && wallTiles[x, y - 1] == null)
         {
             ClearOverlap(x, y - 1, 1);
-            GameObject lWall = Instantiate(cardinalWalls[3], new Vector3(x, y - 1, 0f), Quaternion.identity);
-            lWall.transform.SetParent(transform);
-            lWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-            wallTiles[x, y - 1] = lWall;
+            InstantiateWall(x, y - 1, 3);
         }
     }
-    private void MakeCorner(int x, int y, int wallIndex)
+
+    private void InstantiateWall(int x, int y, int wallIndex)
+    {
+        GameObject instance = InstantiateDungeonObject(cardinalWalls[wallIndex], new Vector3(x, y, 0f), Quaternion.identity, "Dungeon");
+        wallTiles[x, y] = instance;
+    }
+    private void InstantiateCorner(int x, int y, int wallIndex)
     {
         Destroy(wallTiles[x, y]);
         wallTiles[x, y] = null;
-        GameObject cornerWall = Instantiate(cornerWalls[wallIndex], new Vector3(x, y, 0f), Quaternion.identity);
-        cornerWall.transform.SetParent(transform);
-        cornerWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-        wallTiles[x, y] = cornerWall;
+        GameObject instance = InstantiateDungeonObject(cornerWalls[wallIndex], new Vector3(x, y, 0f), Quaternion.identity, "Dungeon");
+        wallTiles[x, y] = instance;
     }
-    public void DrawCorners(int x, int y, Rect corridor)
+    public void DrawCorners(int x, int y, Rect corridor, List<Rect> corridorRooms)
     {
         if (corridor.height > corridor.width)
-        {
-            if (wallTiles[x + 2, y] != null && wallTiles[x - 2, y] != null)
             {
-                if (IsUpperCloser(y, corridor))
+                if (IsOnYMin(y, corridorRooms) && !IsOnXMin(x, corridorRooms) && !IsOnXMax(x, corridorRooms))
                 {
-                    MakeCorner(x - 1, y, 2);
-                    MakeCorner(x + 1, y, 3);
-                    
-                }
-                GameObject spawnTrigger = Instantiate(triggerPrefab, new Vector3(x, y, 0f), Quaternion.identity);
-                foreach (Rect c in completeRooms)
-                {
-                    if (c.Contains(new Vector2(x, y)))
+                    InstantiateCorner(x - 1, y, 2);
+                    InstantiateCorner(x + 1, y, 3);
+                    GameObject spawnTrigger = Instantiate(triggerPrefab, new Vector3(x, y, 0f), Quaternion.identity);
+                    foreach (Rect c in completeRooms)
                     {
-                        spawnTrigger.GetComponent<EnemySpawnTrigger>().triggerRoom = c;
+                        if (c.Contains(new Vector2(x, y)))
+                        {
+                            spawnTrigger.GetComponent<EnemySpawnTrigger>().triggerRoom = c;
+                        }
                     }
                 }
-                
-            }
-        }
-        if(corridor.width > corridor.height)
-        {
-
-            if (wallTiles[x, y + 2] != null && wallTiles[x, y - 2] != null)
-            {
-                if (IsLeftCloser(x, corridor))
+                if (IsOnYMax(y, corridorRooms))
                 {
-                    MakeCorner(x, y - 1, 2);
+                    GameObject spawnTrigger = Instantiate(triggerPrefab, new Vector3(x, y, 0f), Quaternion.identity);
+                    foreach (Rect c in completeRooms)
+                    {
+                        if (c.Contains(new Vector2(x, y)))
+                        {
+                            spawnTrigger.GetComponent<EnemySpawnTrigger>().triggerRoom = c;
+                        }
+                    }
                 }
-                if(!IsLeftCloser(x,corridor))
+            }
+            if (corridor.width > corridor.height)
+            {
+
+                if (IsOnXMin(x, corridorRooms) && !IsOnYMax(y, corridorRooms) && !IsOnYMin(y, corridorRooms))
                 {
-                    MakeCorner(x, y - 1, 3);
+                    Destroy(wallTiles[x, y - 1]);
+                    InstantiateCorner(x, y - 1, 2);
+                }
+                if (IsOnXMax(x, corridorRooms))
+                {
+                    Destroy(wallTiles[x, y - 1]);
+                    InstantiateCorner(x, y - 1, 3);
+                }
+                else if (IsOnXMax(x, corridorRooms) && IsOnYMin(y, corridorRooms))
+                {
+                    Destroy(wallTiles[x, y - 1]);
+                    InstantiateWall(x, y - 1, 3);
                 }
                 Destroy(wallTiles[x, y + 1]);
-                wallTiles[x, y + 1] = null;
-                GameObject cornerWall = Instantiate(cardinalWalls[2], new Vector3(x, y + 1, 0f), Quaternion.identity);
-                GameObject spawnTrigger = Instantiate(triggerPrefab, new Vector3(x, y, 0f), Quaternion.identity);
+                InstantiateWall(x, y + 1, 2);
+                GameObject spawnTrigger = InstantiateDungeonObject(triggerPrefab, new Vector3(x, y, 0f), Quaternion.identity);
                 foreach (Rect c in completeRooms)
                 {
                     if (c.Contains(new Vector2(x, y)))
@@ -420,42 +395,55 @@ public class DungeonGen : MonoBehaviour
                         spawnTrigger.GetComponent<EnemySpawnTrigger>().triggerRoom = c;
                     }
                 }
-                cornerWall.transform.SetParent(transform);
-                cornerWall.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-                wallTiles[x, y + 1] = cornerWall;
+            }
+    }
+
+    private bool IsOnYMax(int y, List<Rect> rooms)
+    {
+        foreach (Rect room in rooms)
+        {
+            if (room.yMax - 1 == y)
+            {
+                return true;
             }
         }
+        return false;
     }
 
-    public bool IsUpperCloser(int y, Rect corridor)
+    private bool IsOnYMin(int y, List<Rect> rooms)
     {
-        int dYMax = (int)corridor.yMax - y;
-        int dYMin = y - (int)corridor.yMin;
-
-
-        if (dYMin > dYMax)
+        foreach (Rect room in rooms)
         {
-            return true;
+            if (room.yMin == y)
+            {
+                return true;
+            }
         }
-        else
-        {
-            return false; 
-        }     
+        return false;
     }
 
-    public bool IsLeftCloser(int x, Rect corridor)
+    private bool IsOnXMax(int x, List<Rect> rooms)
     {
-        int dXMax = (int)corridor.xMax - x;
-        int dXMin = x - (int)corridor.xMin;
+        foreach (Rect room in rooms)
+        {
+            if (room.xMax - 1 == x)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        if (dXMin > dXMax)
+    private bool IsOnXMin(int x, List<Rect> rooms)
+    {
+        foreach (Rect room in rooms)
         {
-            return true;
+            if (room.xMin == x)
+            {
+                return true;
+            }
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     public void DrawCorridor(Room currentRoom)
@@ -468,31 +456,43 @@ public class DungeonGen : MonoBehaviour
         DrawCorridor(currentRoom.left);
         DrawCorridor(currentRoom.right);
 
-        foreach(Rect corridor in currentRoom.corridors)
+        foreach (Rect corridor in currentRoom.corridors)
         {
-            for (int x = (int)corridor.x; x < corridor.xMax; x++){
+            for (int x = (int)corridor.x; x < corridor.xMax; x++)
+            {
                 for (int y = (int)corridor.y; y < corridor.yMax; y++)
-                { 
-                    if (floorTiles[x,y] == null)
-                    {  
+                {
+                    if (floorTiles[x, y] == null)
+                    {
                         Destroy(backgroundTiles[x, y]);
-                        GameObject instance = Instantiate(floor, new Vector3(x, y, 0f), Quaternion.identity);
-                        instance.transform.SetParent(transform);
-                        instance.GetComponent<Renderer>().sortingLayerName = "Dungeon";
-                        corridorTiles[x, y] = instance; 
+                        GameObject instance = InstantiateDungeonObject(floor, new Vector3(x, y, 0f), Quaternion.identity, "Dungeon");
+                        List<Rect> roomConnections = GetCorridorRooms(x, y, corridor);
                         DrawCorridorWalls(x, y);
-                        DrawCorners(x, y, corridor);
+                        DrawCorners(x, y, corridor, roomConnections);
                         if (wallTiles[x, y] != null)
-                        {  
+                        {
                             if (wallTiles[x, y].transform.position == instance.transform.position)
-                            { 
+                            {
                                 Destroy(wallTiles[x, y]);
                             }
-                        } 
+                        }
                     }
                 }
             }
         }
+    }
+
+    public List<Rect> GetCorridorRooms(int x, int y, Rect corridor)
+    {
+        List<Rect> rooms = new List<Rect>();
+        foreach (Rect room in completeRooms)
+        {
+            if (corridor.Overlaps(room))
+            {
+                rooms.Add(room);
+            }
+        }
+        return rooms;
     }
 
     public void DrawBackground()
@@ -504,69 +504,65 @@ public class DungeonGen : MonoBehaviour
             {
                 if (x < 20)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x - 20, y, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x - 20, y);
                 }
                 if (y < 20)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x, y - 20, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x, y - 20);
                 }
                 if (x > rows - 21)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x + 20, y, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x + 20, y);
                 }
                 if (y > cols - 21)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x , y + 20, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x, y + 20);
                 }
 
                 if (y < 20 && x < 20)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x - 20, y - 20, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x - 20, y - 20);
                 }
                 if (x > rows - 21 && y < 20)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x + 20, y - 20, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x + 20, y - 20);
                 }
                 if (x > rows - 21 && y > cols - 21)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x + 20, y + 20, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x + 20, y + 20);
                 }
                 if (x < 20 && y > cols - 21)
                 {
-                    GameObject inst = Instantiate(background, new Vector3(x - 20, y + 20, 0f), Quaternion.identity);
-                    inst.transform.SetParent(transform);
-                    inst.GetComponent<Renderer>().sortingLayerName = "Background";
+                    InstantiateBackground(x - 20, y + 20);
                 }
-
-                GameObject instance = Instantiate(background, new Vector3(x, y, 0f), Quaternion.identity);
-                instance.transform.SetParent(transform);
-                instance.GetComponent<Renderer>().sortingLayerName = "Background";
+                GameObject instance = InstantiateDungeonObject(background, new Vector3(x, y, 0f), Quaternion.identity, "Background");
                 if (x >= 0 && x <= rows && y >= 0 & y <= cols)
                 {
                     backgroundTiles[x, y] = instance;
                 }
+
             }
         }
+    }
+
+    private void InstantiateBackground(int x, int y)
+    {
+        GameObject instance = InstantiateDungeonObject(background, new Vector3(x, y, 0f), Quaternion.identity, "Background");
+    }
+
+    private GameObject InstantiateDungeonObject(GameObject prefab, Vector3 position, Quaternion rotation, string sortingLayer = null)
+    {
+        GameObject obj = Instantiate(prefab, position, rotation);
+        obj.transform.SetParent(transform);
+        if (sortingLayer != null)
+            obj.GetComponent<Renderer>().sortingLayerName = sortingLayer;
+        return obj;
     }
 
     public void Generate(Room room)
     {
         if (room.IsLeaf())
-        {  
+        {
             if (room.rect.width > rMaxSize || room.rect.height > rMaxSize || Random.Range(0.0f, 1.0f) > 0.25)
             {
                 if (room.Split(rMinSize, rMaxSize))
@@ -587,7 +583,6 @@ public class DungeonGen : MonoBehaviour
         backgroundTiles = new GameObject[rows, cols];
         wallTiles = new GameObject[rows, cols];
         floorTiles = new GameObject[rows, cols];
-        corridorTiles = new GameObject[rows, cols];
 
         DrawBackground();
         DrawRoom(root);

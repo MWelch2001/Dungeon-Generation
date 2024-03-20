@@ -197,6 +197,7 @@ MonoBehaviour:
   dmg: 5
   speed: 10
   data: {fileID: 11400000, guid: 0f3e2b8523d93ca4f9b234609f3ad25a, type: 2}
+  coinPrefab: {fileID: 159653402801963747, guid: 8c0d227f97f3d1d47a6b2c824e72d088, type: 3}
   spawnRoom:
     serializedVersion: 2
     x: 0
@@ -216,4 +217,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afecd3e7b66dbcf4b805794dfa89b8e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  healthBar: []
   health: 100
+  maxHp: 0

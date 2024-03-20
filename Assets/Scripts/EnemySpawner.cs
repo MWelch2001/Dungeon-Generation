@@ -35,6 +35,7 @@ public class EnemySpawner : MonoBehaviour
                 }
             }
         }  
+
     }
 
     private bool IsPlayerSpawn(Rect room)
@@ -43,7 +44,7 @@ public class EnemySpawner : MonoBehaviour
         {
             return true;
         }
-        return false;
+        return false;  
     }
 
     private bool IsValidSpawn(int x, int y)
