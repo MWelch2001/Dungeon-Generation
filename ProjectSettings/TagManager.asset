@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - DungeonGen
+  - Enemy
+  - Trigger
+  - EnemySpawner
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 3392198301
+    locked: 0
+  - name: Dungeon
+    uniqueID: 1907231931
+    locked: 0
+  - name: Player
+    uniqueID: 648916883
+    locked: 0
+  - name: Coin
+    uniqueID: 3483598341
+    locked: 0
+  - name: Bullet
+    uniqueID: 4275963931
+    locked: 0
+  - name: UI
+    uniqueID: 3328004413
+    locked: 0
